@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CourseLibrary.API.Models;
 using CourseLibrary.API.Services;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -138,6 +139,20 @@ namespace CourseLibrary.API.Controllers
 
             _courseLibraryRepository.UpdateCourse(courseForAuthorFromRepo);
 
+            _courseLibraryRepository.Save();
+
+            return NoContent();
+        }
+
+        [HttpDelete("{courseId}")]
+        public IActionResult DeleteCourseForAuthor(Guid authorId, Guid courseId)
+        {
+            if (!_courseLibraryRepository.AuthorExists(authorId)) return NotFound();
+
+            var courseToDelete = _courseLibraryRepository.GetCourse(authorId, courseId);
+            if (courseToDelete == null) return NotFound();
+
+            _courseLibraryRepository.DeleteCourse(courseToDelete);
             _courseLibraryRepository.Save();
 
             return NoContent();
