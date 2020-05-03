@@ -7,16 +7,8 @@ using System.Threading.Tasks;
 
 namespace CourseLibrary.API.Models
 {
-    [CourseCustomValidation(ErrorMessage = "Title must be different from description")]
-    public class CourseForCreationDto // : IValidatableObject
+    public class CourseForCreationDto : CourseForManipulationDto // : IValidatableObject
     {
-        [Required(ErrorMessage = "Title Required error msg.")]
-        [MaxLength(50, ErrorMessage = "Title length err msg.")]
-        public string Title { get; set; }
-
-        [MaxLength(250, ErrorMessage = "Description length err msg.")]
-        public string Description { get; set; }
-
         //public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         //{
         //    if (Title == Description) yield return
