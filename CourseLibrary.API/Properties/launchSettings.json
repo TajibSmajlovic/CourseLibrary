@@ -15,11 +15,12 @@
   "profiles": {
     "IIS Express": {
       "commandName": "Project",
-      "launchUrl": "weatherforecast",
+      "launchBrowser": true,
+      "launchUrl": "swagger/index.html",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:51044"
+      "applicationUrl": "http://localhost:51044/"
     },
     "CourseLibrary.API": {
       "commandName": "Project",
