@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CourseLibrary.Common\CourseLibrary.Common.csproj" />
+    <ProjectReference Include="..\CourseLibrary.Database\CourseLibrary.Database.csproj" />
+    <ProjectReference Include="..\CourseLibrary.Domain\CourseLibrary.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
