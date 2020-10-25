@@ -1,24 +1,24 @@
-﻿using CourseLibrary.Common.Models.Dtos;
+﻿using CourseLibrary.Common.Models;
+using CourseLibrary.Common.Models.Dtos;
+using CourseLibrary.Common.Models.Requests;
 using CourseLibrary.Domain.Entities;
 using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CourseLibrary.Common.Interfaces
 {
     public interface ICourseService
     {
-        IEnumerable<CourseDto> GetCourses(Guid authorId);
+        Task<PagedList<CourseDto>> GetPagedAsync(Guid authorId, CourseSearchRequest request);
 
-        CourseDto GetCourse(Guid authorId, Guid courseId);
+        Task<CourseDto> GetAuthorsCourseAsync(Guid authorId, Guid courseId);
 
-        void AddCourse(Guid authorId, CourseEntity course);
+        Task AddCourseAsync(Guid AuthorId, CourseCreationDto course);
 
         void UpdateCourse(CourseEntity course);
 
         void DeleteCourse(CourseEntity course);
 
         bool AuthorExists(Guid authorId);
-
-        bool Save();
     }
 }

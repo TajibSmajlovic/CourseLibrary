@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace CourseLibrary.Common.Models.Requests
+﻿namespace CourseLibrary.Common.Models.Requests
 {
-    public class AuthorSearchRequest
+    public class AuthorSearchRequest : FilterRequest
     {
         public string Name { get; set; }
 

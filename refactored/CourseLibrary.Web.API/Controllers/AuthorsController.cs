@@ -1,11 +1,11 @@
-﻿using CourseLibrary.Common.Dtos;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using CourseLibrary.Common.Dtos;
 using CourseLibrary.Common.Interfaces;
 using CourseLibrary.Common.Models;
+using CourseLibrary.Common.Models.Dtos;
 using CourseLibrary.Common.Models.Requests;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace CourseLibrary.Web.API.Controllers
 {
@@ -21,39 +21,37 @@ namespace CourseLibrary.Web.API.Controllers
             _authorService = authorService;
         }
 
-        //[HttpGet]
-        //[ProducesResponseType(typeof(IEnumerable<AuthorDto>), 200)]
-        //public ActionResult<IEnumerable<AuthorDto>> GetAuthors()
-        //{
-        //    var authors = _authorService.GetAuthors();
-
-        //    if (authors == null)
-        //        return NotFound();
-
-        //    return Ok(authors);
-        //}
-
         [HttpGet]
         public async Task<ActionResult<PagedList<AuthorDto>>> Get([FromQuery] AuthorSearchRequest request)
         {
             PagedList<AuthorDto> result = await _authorService.GetPagedAsync(request);
 
             if (result == null)
-            {
                 return NotFound();
-            }
 
             return Ok(result);
         }
 
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(AuthorDto), 200)]
-        public ActionResult<AuthorDto> getAuthor(Guid id)
+        public async Task<ActionResult<AuthorDto>> GetAuthor(Guid id)
         {
-            var author = _authorService.GetAuthor(id);
+            var author = await _authorService.GetAuthorAsync(id);
 
             if (author == null)
                 return NotFound();
+
+            return Ok(author);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(typeof(AuthorDto), 200)]
+        public async Task<ActionResult> AddAuthor(AuthorCreationDto author)
+        {
+            if (author == null)
+                return BadRequest();
+
+            await _authorService.AddAuthorAsync(author);
 
             return Ok(author);
         }

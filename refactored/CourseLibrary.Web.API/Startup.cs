@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using System;
 
 namespace CourseLibrary.Web.API
 {
@@ -28,11 +27,11 @@ namespace CourseLibrary.Web.API
 
             services.AddControllers();
 
+            services.AddRouting(options => options.LowercaseUrls = true);
+
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "Course Library", Version = "v1" }));
 
             services.AddDbContext<CourseLibraryContext>(options => options.UseNpgsql(connectionString));
-
-            services.AddRouting(options => options.LowercaseUrls = true);
 
             services.AddScoped<ICourseLibraryContext, CourseLibraryContext>();
             services.AddScoped<IAuthorService, AuthorService>();

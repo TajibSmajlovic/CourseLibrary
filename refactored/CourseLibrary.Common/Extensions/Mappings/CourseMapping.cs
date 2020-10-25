@@ -7,7 +7,8 @@ namespace CourseLibrary.Common.Extensions.Mappings
     {
         public static CourseDto ToDto(this CourseEntity course)
         {
-            if (course == null) return null;
+            if (course == null)
+                return null;
 
             return new CourseDto
             {
@@ -15,6 +16,19 @@ namespace CourseLibrary.Common.Extensions.Mappings
                 Title = course.Title,
                 Description = course.Description,
                 AuthorId = course.AuthorId
+            };
+        }
+
+        public static CourseEntity ToEntity(this CourseCreationDto course)
+        {
+            if (course == null)
+                return null;
+
+            return new CourseEntity
+            {
+                AuthorId = course.AuthorId,
+                Title = course.Title,
+                Description = course.Description
             };
         }
     }

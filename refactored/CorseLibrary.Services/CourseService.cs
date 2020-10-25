@@ -1,46 +1,47 @@
-﻿using CourseLibrary.Common.Extensions.Mappings;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using CourseLibrary.Common.Models;
+using CourseLibrary.Domain.Entities;
 using CourseLibrary.Common.Interfaces;
 using CourseLibrary.Common.Models.Dtos;
-using CourseLibrary.Database;
-using CourseLibrary.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using CourseLibrary.Common.Models.Requests;
+using CourseLibrary.Common.Extensions.Mappings;
 
 namespace CorseLibrary.Services
 {
     public class CourseService : ICourseService
     {
         private readonly ICourseLibraryContext _context;
-        //private readonly IPropertyMappingService _propertyMappingService;
 
-        public CourseService(ICourseLibraryContext context
-            // IPropertyMappingService propertyMappingService
-            )
+        public CourseService(ICourseLibraryContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
-            // _propertyMappingService = propertyMappingService ?? throw new ArgumentNullException(nameof(propertyMappingService));
         }
 
-        public void AddCourse(Guid authorId, CourseEntity course)
+        public async Task<PagedList<CourseDto>> GetPagedAsync(Guid authorId, CourseSearchRequest request)
         {
             if (authorId == Guid.Empty)
                 throw new ArgumentNullException(nameof(authorId));
 
-            if (course == null)
-                throw new ArgumentNullException(nameof(course));
+            if (!AuthorExists(authorId))
+                return null;
 
-            // always set the AuthorId to the passed-in authorId
-            course.AuthorId = authorId;
-            _context.Courses.Add(course);
+            var query = _context.Courses.AsNoTracking()
+                                 .Where(c => c.AuthorId == authorId)
+                                 .AsQueryable();
+
+            query = ApplyFilter(query, request);
+
+            List<CourseDto> list = await query.Select(x => x.ToDto())
+                                            .ToListAsync();
+
+            return new PagedList<CourseDto>(list);
         }
 
-        public void DeleteCourse(CourseEntity course)
-        {
-            _context.Courses.Remove(course);
-        }
-
-        public CourseDto GetCourse(Guid authorId, Guid courseId)
+        public async Task<CourseDto> GetAuthorsCourseAsync(Guid authorId, Guid courseId)
         {
             if (authorId == Guid.Empty)
                 throw new ArgumentNullException(nameof(authorId));
@@ -51,21 +52,29 @@ namespace CorseLibrary.Services
             if (!AuthorExists(authorId))
                 return null;
 
-            return _context.Courses
-              .Where(c => c.AuthorId == authorId && c.Id == courseId).FirstOrDefault().ToDto();
+            CourseEntity course = await _context.Courses
+              .Where(c => c.AuthorId == authorId && c.Id == courseId).FirstOrDefaultAsync();
+
+            return course.ToDto();
         }
 
-        public IEnumerable<CourseDto> GetCourses(Guid authorId)
+        public async Task AddCourseAsync(Guid authorId, CourseCreationDto course)
         {
             if (authorId == Guid.Empty)
                 throw new ArgumentNullException(nameof(authorId));
 
-            if (!AuthorExists(authorId))
-                return null;
+            if (course == null)
+                throw new ArgumentNullException(nameof(course));
 
-            return _context.Courses
-                        .Where(c => c.AuthorId == authorId)
-                        .OrderBy(c => c.Title).ToList().Select(x => x.ToDto());
+            course.AuthorId = authorId;
+
+            _context.Courses.Add(course.ToEntity());
+            await _context.SaveChangesAsync();
+        }
+
+        public void DeleteCourse(CourseEntity course)
+        {
+            _context.Courses.Remove(course);
         }
 
         public void UpdateCourse(CourseEntity course)
@@ -81,9 +90,17 @@ namespace CorseLibrary.Services
             return _context.Authors.Any(a => a.Id == authorId);
         }
 
-        public bool Save()
+        #region Private methods
+
+        private IQueryable<CourseEntity> ApplyFilter(IQueryable<CourseEntity> query, CourseSearchRequest request)
         {
-            return (_context.SaveChanges() >= 0);
+            if (!string.IsNullOrEmpty(request.Term))
+                query = query.Where(x => x.Title.ToLower().Contains(request.Term.Trim().ToLower())
+                                    || x.Description.ToLower().Contains(request.Term.Trim().ToLower()));
+
+            return query;
         }
+
+        #endregion Private methods
     }
 }

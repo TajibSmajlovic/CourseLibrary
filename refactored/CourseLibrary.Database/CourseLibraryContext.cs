@@ -3,6 +3,8 @@ using CourseLibrary.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CourseLibrary.Database
 {
@@ -19,7 +21,15 @@ namespace CourseLibrary.Database
         public override int SaveChanges()
         {
             Audit();
+
             return base.SaveChanges();
+        }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken token = default)
+        {
+            Audit();
+
+            return await base.SaveChangesAsync(token);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

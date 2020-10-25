@@ -1,5 +1,7 @@
 ﻿using CourseLibrary.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CourseLibrary.Common.Interfaces
 {
@@ -7,6 +9,8 @@ namespace CourseLibrary.Common.Interfaces
     {
         DbSet<AuthorEntity> Authors { get; set; }
         DbSet<CourseEntity> Courses { get; set; }
+
+        Task<int> SaveChangesAsync(CancellationToken token = default);
 
         int SaveChanges();
     }
