@@ -3,6 +3,7 @@ using CourseLibrary.Common.Interfaces;
 using CourseLibrary.Database;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +26,28 @@ namespace CourseLibrary.Web.API
         {
             string connectionString = Configuration.GetConnectionString("DefaultConnection");
 
-            services.AddControllers();
+            services.AddHttpCacheHeaders(expirationModelOptionsAction =>
+            {
+                expirationModelOptionsAction.MaxAge = 60;
+                expirationModelOptionsAction.CacheLocation = Marvin.Cache.Headers.CacheLocation.Private;
+            },
+            validationModelOptionsAction =>
+            {
+                validationModelOptionsAction.MustRevalidate = true;
+            }
+            );
+
+            services.AddResponseCaching();
+
+            services.AddControllers(setupActions =>
+            {
+                setupActions.ReturnHttpNotAcceptable = true;
+                setupActions.CacheProfiles.Add("240SecondsCacheProfile",
+                                                  new CacheProfile()
+                                                  {
+                                                      Duration = 240
+                                                  });
+            });
 
             services.AddRouting(options => options.LowercaseUrls = true);
 
@@ -55,6 +77,10 @@ namespace CourseLibrary.Web.API
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "CourseLibrary");
                 });
             }
+
+            app.UseResponseCaching();
+
+            app.UseHttpCacheHeaders();
 
             app.UseHttpsRedirection();
 

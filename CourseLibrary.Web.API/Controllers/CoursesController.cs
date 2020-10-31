@@ -23,6 +23,7 @@ namespace CourseLibrary.Web.API.Controllers
 
         //[HttpHead]
         [HttpGet]
+        [ResponseCache(Duration = 120)]
         [ProducesResponseType(typeof(IEnumerable<CourseDto>), 200)]
         public async Task<ActionResult<PagedList<CourseDto>>> GetCoursesForAuthor(Guid authorId, [FromQuery] CourseSearchRequest request)
         {

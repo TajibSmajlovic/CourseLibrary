@@ -7,11 +7,15 @@ using CourseLibrary.Common.Models;
 using CourseLibrary.Common.Models.Dtos;
 using CourseLibrary.Common.Models.Requests;
 using System.Dynamic;
+using Marvin.Cache.Headers;
 
 namespace CourseLibrary.Web.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    // [ResponseCache(CacheProfileName = "240SecondsCacheProfile")]
+    [HttpCacheExpiration(CacheLocation = CacheLocation.Public)]
+    [HttpCacheValidation(MustRevalidate = true)]
     [Produces("application/json")]
     public class AuthorsController : ControllerBase
     {
@@ -23,6 +27,9 @@ namespace CourseLibrary.Web.API.Controllers
         }
 
         [HttpGet]
+        // [ResponseCache(Duration = 420)]
+        [HttpCacheExpiration(CacheLocation = CacheLocation.Public, MaxAge = 1000)]
+        [HttpCacheValidation(MustRevalidate = false)]
         public async Task<IActionResult> Get([FromQuery] AuthorSearchRequest request)
         {
             PagedList<AuthorDto> result = null;
