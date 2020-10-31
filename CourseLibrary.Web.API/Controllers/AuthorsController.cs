@@ -6,6 +6,7 @@ using CourseLibrary.Common.Interfaces;
 using CourseLibrary.Common.Models;
 using CourseLibrary.Common.Models.Dtos;
 using CourseLibrary.Common.Models.Requests;
+using System.Dynamic;
 
 namespace CourseLibrary.Web.API.Controllers
 {
@@ -22,14 +23,23 @@ namespace CourseLibrary.Web.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedList<AuthorDto>>> Get([FromQuery] AuthorSearchRequest request)
+        public async Task<IActionResult> Get([FromQuery] AuthorSearchRequest request)
         {
-            PagedList<AuthorDto> result = await _authorService.GetPagedAsync(request);
+            PagedList<AuthorDto> result = null;
+            PagedList<ExpandoObject> result2 = null;
 
-            if (result == null)
+            if (!string.IsNullOrEmpty(request.Fields))
+                result2 = await _authorService.GetPagedWithFieldsAsync(request);
+            else
+                result = await _authorService.GetPagedAsync(request);
+
+            if (result == null && result2 == null)
                 return NotFound();
 
-            return Ok(result);
+            if (result != null)
+                return Ok(result);
+
+            return Ok(result2);
         }
 
         [HttpGet("{id:guid}")]

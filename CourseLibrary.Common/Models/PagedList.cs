@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using CourseLibrary.Common.Extensions;
+using System.Collections.Generic;
 
 namespace CourseLibrary.Common.Models
 {

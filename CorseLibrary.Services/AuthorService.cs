@@ -1,15 +1,19 @@
-﻿using CourseLibrary.Common.Dtos;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using CourseLibrary.Common.Constants;
+using CourseLibrary.Common.Dtos;
 using CourseLibrary.Common.Interfaces;
 using CourseLibrary.Common.Mappings;
 using CourseLibrary.Common.Models;
 using CourseLibrary.Common.Models.Dtos;
 using CourseLibrary.Common.Models.Requests;
 using CourseLibrary.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using CourseLibrary.Common.Enums;
+using System.Dynamic;
+using CourseLibrary.Common.Extensions;
 
 namespace CorseLibrary.Services
 {
@@ -24,17 +28,30 @@ namespace CorseLibrary.Services
 
         public async Task<PagedList<AuthorDto>> GetPagedAsync(AuthorSearchRequest request)
         {
-            var query = _context.Authors.AsNoTracking()
-                                      .AsQueryable();
+            var query = _context.Authors.AsNoTracking();
 
-            query = ApplyFilter(query, request);
+            ApplyFiltering(ref query, request);
+            ApplyOrdering(ref query, request);
+            ApplyPaging(ref query, request);
 
             List<AuthorDto> list = await query.Select(x => x.ToDto())
                                             .ToListAsync();
 
-            var result = new PagedList<AuthorDto>(list);
+            return new PagedList<AuthorDto>(list);
+        }
 
-            return result;
+        public async Task<PagedList<ExpandoObject>> GetPagedWithFieldsAsync(AuthorSearchRequest request)
+        {
+            var query = _context.Authors.AsNoTracking();
+
+            ApplyFiltering(ref query, request);
+            ApplyOrdering(ref query, request);
+            ApplyPaging(ref query, request);
+
+            List<AuthorDto> list = await query.Select(x => x.ToDto())
+                                            .ToListAsync();
+
+            return new PagedList<ExpandoObject>(list.ShapeData(request.Fields).ToList());
         }
 
         public async Task<AuthorDto> GetAuthorAsync(Guid authorId)
@@ -109,7 +126,7 @@ namespace CorseLibrary.Services
 
         #region Private methods
 
-        private IQueryable<AuthorEntity> ApplyFilter(IQueryable<AuthorEntity> query, AuthorSearchRequest request)
+        private void ApplyFiltering(ref IQueryable<AuthorEntity> query, AuthorSearchRequest request)
         {
             if (!string.IsNullOrEmpty(request.Term))
                 query = query.Where(x => x.FirstName.ToLower().Contains(request.Term.Trim().ToLower())
@@ -122,8 +139,42 @@ namespace CorseLibrary.Services
 
             if (!string.IsNullOrEmpty(request.MainCategory))
                 query = query.Where(x => x.MainCategory.ToLower().Contains(request.MainCategory.Trim().ToLower()));
+        }
 
-            return query;
+        private void ApplyOrdering(ref IQueryable<AuthorEntity> query, AuthorSearchRequest request)
+        {
+            switch (request.OrderBy)
+            {
+                case AuthorOrderBy.AGE:
+                    if (request.SortOrder == SortOrder.Descending)
+                        query = query.OrderByDescending(a => a.DateOfBirth);
+                    else
+                        query = query.OrderBy(a => a.DateOfBirth);
+
+                    break;
+
+                case AuthorOrderBy.MAIN_CATEGORY:
+                    if (request.SortOrder == SortOrder.Descending)
+                        query = query.OrderByDescending(a => a.MainCategory);
+                    else
+                        query = query.OrderBy(a => a.MainCategory);
+
+                    break;
+
+                default:
+                    if (request.SortOrder == SortOrder.Descending)
+                        query = query.OrderByDescending(a => a.FirstName).ThenBy(a => a.LastName);
+                    else
+                        query = query.OrderBy(a => a.FirstName).ThenBy(a => a.LastName);
+
+                    break;
+            }
+        }
+
+        private void ApplyPaging(ref IQueryable<AuthorEntity> query, AuthorSearchRequest request)
+        {
+            query = query.Skip(request.PageSize * (request.PageNumber - 1))
+                 .Take(request.PageSize);
         }
 
         #endregion Private methods

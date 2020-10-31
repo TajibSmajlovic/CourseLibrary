@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Dynamic;
 using System.Threading.Tasks;
 using CourseLibrary.Common.Dtos;
 using CourseLibrary.Common.Models;
@@ -10,6 +11,8 @@ namespace CourseLibrary.Common.Interfaces
     public interface IAuthorService
     {
         Task<PagedList<AuthorDto>> GetPagedAsync(AuthorSearchRequest request);
+
+        Task<PagedList<ExpandoObject>> GetPagedWithFieldsAsync(AuthorSearchRequest request);
 
         Task<AuthorDto> GetAuthorAsync(Guid authorId);
 
